@@ -1,0 +1,80 @@
+[
+  {
+    "re": "^https://s4dev\\.",
+    "label": "SD0-{client} DEV",
+    "client": "100",
+    "env": "D"
+  },
+  {
+    "re": "/sap/bc/gui/sap/its/webgui",
+    "label": "SAP GUI {client}",
+    "client": "",
+    "env": "auto"
+  },
+  {
+    "re": "/sap/bc/ui2/flp",
+    "label": "Fiori {client}",
+    "client": "",
+    "env": "auto"
+  },
+  {
+    "re": "\\.sandbox\\.(my\\.salesforce|lightning\\.force)\\.com",
+    "label": "Salesforce",
+    "client": "",
+    "env": "auto"
+  },
+  {
+    "re": "\\.(my\\.salesforce|lightning\\.force)\\.com",
+    "label": "Salesforce PROD",
+    "client": "",
+    "env": "P"
+  },
+  {
+    "re": "^https://\\w+?dev\\d*\\.service-now\\.com",
+    "label": "ServiceNow DEV",
+    "client": "",
+    "env": "D"
+  },
+  {
+    "re": "^https://\\w+?(test|uat)\\d*\\.service-now\\.com",
+    "label": "ServiceNow TEST",
+    "client": "",
+    "env": "Q"
+  },
+  {
+    "re": "\\.service-now\\.com",
+    "label": "ServiceNow PROD",
+    "client": "",
+    "env": "P"
+  },
+  {
+    "re": "\\.crm\\d*\\.dynamics\\.com",
+    "label": "Dynamics 365",
+    "client": "",
+    "env": "auto"
+  },
+  {
+    "re": "\\.atlassian\\.net/(jira|browse)",
+    "label": "Jira",
+    "client": "",
+    "env": "auto"
+  },
+  {
+    "re": "^https?://localhost:(\\d+)",
+    "label": "Local :$1",
+    "client": "",
+    "env": "D"
+  },
+  {
+    "re": "crm-\\w+\\.example\\.com",
+    "label": "CRM",
+    "client": "",
+    "env": "auto"
+  },
+  {
+    "re": ".",
+    "label": "{host}",
+    "client": "",
+    "env": "auto"
+  }
+]

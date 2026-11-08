@@ -9,7 +9,7 @@ system you are on, so test-evidence screenshots carry their own timestamp and st
 - Own names per system with URL regex rules (`$1`, `{host}`, `{client}` = `sap-client`), import / export as JSON.
 - No network calls, no data collected. Permission: `storage` only.
 
-Live demo and guide: [`docs/showcase.html`](docs/showcase.html). Store texts: [`docs/store-listing.md`](docs/store-listing.md).
+Live demo and guide: [`docs/showcase.html`](docs/showcase.html). Store texts: [`docs/store-listing.md`](docs/store-listing.md). Sample rules for SAP, Salesforce, ServiceNow, Dynamics 365, Jira and local apps: [`docs/sample-rules.json`](docs/sample-rules.json) (Options > Import rules).
 
 ## Develop
 

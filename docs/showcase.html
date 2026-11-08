@@ -120,16 +120,7 @@ kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px
       <label class="k"><input type="checkbox" id="seconds" checked> Show seconds</label>
       <label class="k"><input type="checkbox" id="tag" checked> Show system tag</label>
       <label class="f">Demo page <select id="page"><option value="light">Light page</option><option value="dark">Dark page</option></select></label>
-      <label class="f">System <select id="sys">
-        <option value="https://hr-sandbox.example.com/">Sandbox: hr-sandbox</option>
-        <option value="https://app-dev.example.com/orders" selected>Development: app-dev</option>
-        <option value="https://crm-uat.example.com/accounts">Test: crm-uat (own rule)</option>
-        <option value="https://shop.prod.example.com/">Production: shop.prod</option>
-        <option value="https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100">SAP GUI, client 100 (own rule)</option>
-        <option value="https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150">SD0-150 (own rule)</option>
-        <option value="https://shop.example.com/">No stage word: shop</option>
-        <option value="">Other: type a URL below</option>
-      </select></label>
+      <label class="f">System <select id="sys"></select></label>
       <label class="f">Page URL <input type="text" id="url" spellcheck="false" value="https://app-dev.example.com/orders"></label>
       <span class="hint">The tag follows the URL, using the rules in the table below.</span>
     </form>
@@ -151,7 +142,7 @@ kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px
     <p>Options &gt; System tag rules. Each rule is a regex on the full URL; the first match wins. In the tag text, <code>$1</code> is the first regex group, <code>{host}</code> the host name, and <code>{client}</code> the <code>sap-client</code> from the URL, else the rule's default client. The colour is fixed per rule, or Auto from the host words. Try the URLs in the demo: <button type="button" data-url="https://crm-uat.example.com/accounts">crm-uat</button> <button type="button" data-url="https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100">SAP GUI client 100</button> <button type="button" data-url="https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150">SD0-150 style</button> <button type="button" data-url="https://shop.example.com/">shop (no stage)</button></p>
     <div class="tbl" style="margin-top:16px">
       <table>
-        <thead><tr><th>URL regex</th><th>Tag text</th><th>Default client</th><th>Colour</th><th>Example result</th></tr></thead>
+        <thead><tr><th>For</th><th>URL regex</th><th>Tag text</th><th>Default client</th><th>Colour</th><th>Example result</th></tr></thead>
         <tbody id="recipes"></tbody>
       </table>
     </div>
@@ -250,27 +241,46 @@ function sbxValidRules(x) {
 }
 
 
+// Demo rule set, first match wins. ex = sample URL(s) shown in the System picker and the recipe table.
 const RULES = [
-  { re: 'crm-(\\w+)\\.example\\.com', label: 'CRM', client: '', env: 'auto' },
-  { re: '^https://s4dev\\.', label: 'SD0-{client}', client: '100', env: 'D' },
-  { re: '/sap/bc/gui/sap/its/webgui', label: 'SAP GUI {client}', client: '', env: 'auto' },
-  { re: '.', label: '{host}', client: '', env: 'auto' },
+  { grp: 'SAP', re: '^https://s4dev\\.', label: 'SD0-{client} DEV', client: '100', env: 'D', ex: [['SD0-150 (client in URL)', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150'], ['SD0-100 (default client)', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui']] },
+  { grp: 'SAP', re: '/sap/bc/gui/sap/its/webgui', label: 'SAP GUI {client}', client: '', env: 'auto', ex: [['SAP GUI client 100', 'https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100']] },
+  { grp: 'SAP', re: '/sap/bc/ui2/flp', label: 'Fiori {client}', client: '', env: 'auto', ex: [['Fiori launchpad', 'https://erp-qas.example.com/sap/bc/ui2/flp?sap-client=300#Shell-home']] },
+  { grp: 'Business apps', re: '\\.sandbox\\.(my\\.salesforce|lightning\\.force)\\.com', label: 'Salesforce', client: '', env: 'auto', ex: [['Salesforce sandbox "uat"', 'https://acme--uat.sandbox.lightning.force.com/lightning/page/home']] },
+  { grp: 'Business apps', re: '\\.(my\\.salesforce|lightning\\.force)\\.com', label: 'Salesforce PROD', client: '', env: 'P', ex: [['Salesforce production', 'https://acme.lightning.force.com/lightning/page/home']] },
+  { grp: 'Business apps', re: '^https://\\w+?dev\\d*\\.service-now\\.com', label: 'ServiceNow DEV', client: '', env: 'D', ex: [['ServiceNow dev instance', 'https://acmedev.service-now.com/now/nav/ui/home']] },
+  { grp: 'Business apps', re: '^https://\\w+?(test|uat)\\d*\\.service-now\\.com', label: 'ServiceNow TEST', client: '', env: 'Q', ex: [['ServiceNow test instance', 'https://acmetest.service-now.com/now/nav/ui/home']] },
+  { grp: 'Business apps', re: '\\.service-now\\.com', label: 'ServiceNow PROD', client: '', env: 'P', ex: [['ServiceNow production', 'https://acme.service-now.com/now/nav/ui/home']] },
+  { grp: 'Business apps', re: '\\.crm\\d*\\.dynamics\\.com', label: 'Dynamics 365', client: '', env: 'auto', ex: [['Dynamics 365 test', 'https://acme-test.crm4.dynamics.com/main.aspx']] },
+  { grp: 'Business apps', re: '\\.atlassian\\.net/(jira|browse)', label: 'Jira', client: '', env: 'auto', ex: [['Jira sandbox', 'https://acme-sandbox-482.atlassian.net/jira/your-work']] },
+  { grp: 'Own web apps', re: '^https?://localhost:(\\d+)', label: 'Local :$1', client: '', env: 'D', ex: [['Local dev server', 'http://localhost:3000/orders']] },
+  { grp: 'Own web apps', re: 'crm-\\w+\\.example\\.com', label: 'CRM', client: '', env: 'auto', ex: [['In-house CRM, uat', 'https://crm-uat.example.com/accounts']] },
+  { grp: 'Any other site', re: '.', label: '{host}', client: '', env: 'auto', ex: [['Development: app-dev', 'https://app-dev.example.com/orders'], ['Sandbox: hr-sandbox', 'https://hr-sandbox.example.com/'], ['Production: shop.prod', 'https://shop.prod.example.com/'], ['No stage word: shop', 'https://shop.example.com/']] },
 ];
-const SAMPLE = ['https://crm-uat.example.com/accounts', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150', 'https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100', 'https://hr-sandbox.example.com/'];
 const ENVTXT = { S: 'Sandbox', D: 'Development', Q: 'Test', P: 'Production', auto: 'Auto from host', none: 'None (grey)' };
 const $ = id => document.getElementById(id);
 const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt, className: cls || '' });
 
 $('recipes').replaceChildren(...RULES.map((r, i) => {
   const tr = document.createElement('tr');
-  const [txt, env] = sbxLabel(SAMPLE[i], RULES.slice(i));
+  const [txt, env] = sbxLabel(r.ex[0][1], RULES);
   const res = document.createElement('td');
   const chip = el('span', txt, 'chip'); chip.style.background = `var(--${env || 'none'})`;
   res.append(chip);
-  tr.append(el('td', r.re, 'mono'), el('td', r.label, 'mono'), el('td', r.client || '-', 'mono'), el('td', ENVTXT[r.env]), res);
+  tr.append(el('td', r.grp), el('td', r.re, 'mono'), el('td', r.label, 'mono'), el('td', r.client || '-', 'mono'), el('td', ENVTXT[r.env]), res);
   return tr;
 }));
 
+// System picker, grouped like the rules
+const groups = {};
+RULES.forEach(r => r.ex.forEach(([name, url]) => (groups[r.grp] ||= []).push([name, url])));
+groups['Other'] = [['Type a URL below', '']];
+$('sys').replaceChildren(...Object.entries(groups).map(([g, list]) => {
+  const og = document.createElement('optgroup'); og.label = g;
+  og.append(...list.map(([name, url]) => Object.assign(document.createElement('option'), { value: url, textContent: name })));
+  return og;
+}));
+$('sys').value = $('url').value;
 const clock = $('clock'), screen = $('screen');
 function tick() {
   const st = { hour: $('hour').value, date: $('date').value, size: $('size').value, theme: $('theme').value, seconds: $('seconds').checked, tag: $('tag').checked };
