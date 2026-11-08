@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Time On settings</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1d2733; --muted:#4a5868; --line:#d5dbe2; --accent:#1d4ed8; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12171e; --card:#1b2430; --ink:#e6ebf1; --muted:#a9b5c2; --line:#334153; --accent:#7aa2ff; --bad:#ff8a8a; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 "Segoe UI",system-ui,sans-serif; }
+  main { max-width:1080px; margin:0 auto; padding:24px 16px 48px; display:flex; flex-direction:column; gap:20px; }
+  h1 { margin:0; font-size:22px; } h2 { margin:0 0 4px; font-size:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  p { margin:0 0 12px; color:var(--muted); }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:760px; }
+  th { text-align:left; font-weight:600; color:var(--muted); padding:6px 4px; }
+  td { padding:4px; vertical-align:middle; }
+  input, select { width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); font:inherit; }
+  input.re { font-family:Consolas,monospace; }
+  input[aria-invalid=true] { border-color:var(--bad); outline:1px solid var(--bad); }
+  button { padding:7px 14px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); font:inherit; cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  td button { padding:4px 9px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  #status { color:var(--muted); } #status.bad { color:var(--bad); }
+  #out { font-weight:600; }
+  code { font-family:Consolas,monospace; }
+  .filebtn { padding:7px 14px; border:1px solid var(--line); border-radius:6px; cursor:pointer; }
+  .filebtn:focus-within { outline:2px solid var(--accent); }
+  .filebtn input { position:absolute; width:1px; height:1px; opacity:0; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+  .grid label { display:flex; flex-direction:column; gap:4px; color:var(--muted); }
+  .grid label.check { flex-direction:row; align-items:center; gap:8px; color:var(--ink); }
+  .grid input[type=checkbox] { width:18px; height:18px; }
+  .pv { display:inline-flex; align-items:center; gap:10px; padding:7px 14px; border-radius:999px; font-variant-numeric:tabular-nums;
+    background:#e9eef5; color:#0b1220; border:1px solid #c9d2dd; }
+  .pv[data-theme=dark] { background:#1f2834; color:#f4f7fb; border-color:#3a475a; }
+  .pv[data-size=S] { zoom:.85 } .pv[data-size=L] { zoom:1.25 }
+  .pv b { font-size:15px; } .pv i { font-style:normal; font-size:13px; opacity:.85; }
+  .pv u { text-decoration:none; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:600; color:#fff; background:rgba(17,24,39,.8); }
+  .pv[data-env=S] u { background:rgba(21,128,61,.9); } .pv[data-env=D] u { background:rgba(29,78,216,.9); } .pv[data-env=Q] u { background:rgba(180,83,9,.9); } .pv[data-env=P] u { background:rgba(185,28,28,.92); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Time On settings</h1>
+
+  <section>
+    <h2>Look</h2>
+    <p>Applies to every tab at once after Save.</p>
+    <div class="grid">
+      <label>Time <select id="hour"><option value="24">24-hour (15:42)</option><option value="12">12-hour (3:42 PM)</option></select></label>
+      <label>Date <select id="date"><option value="short">Sun 8 Nov 2026</option><option value="iso">2026-11-08</option><option value="dmy">08.11.2026</option><option value="dmys">08/11/2026</option><option value="off">No date</option></select></label>
+      <label>Size <select id="size"><option value="S">Small</option><option value="M">Medium</option><option value="L">Large</option></select></label>
+      <label>Glass <select id="theme"><option value="light">Light glass</option><option value="dark">Dark glass</option></select></label>
+      <label class="check"><input type="checkbox" id="seconds"> Show seconds</label>
+      <label class="check"><input type="checkbox" id="tag"> Show system tag</label>
+    </div>
+    <p style="margin:14px 0 0">Preview: <span id="preview" class="pv"></span></p>
+  </section>
+
+  <section>
+    <h2>Where the clock shows</h2>
+    <p>Regex on the full URL. Empty = every site. Example: <code>example\.com|example\.org</code></p>
+    <label for="showOn" class="row">Show on <input id="showOn" class="re" spellcheck="false" style="flex:1 1 320px"></label>
+  </section>
+
+  <section>
+    <h2>System tag rules</h2>
+    <p>First match wins. Regex on the full URL (case-insensitive). Tag text: <code>$1</code> = first regex group, <code>{client}</code> = <code>sap-client</code> from the URL, else the default client (SAP; leave empty for other systems), <code>{host}</code> = host name. Colour "Auto" reads words in the host: sbx / sandbox = Sandbox, dev / localhost = Development, test / qa / uat / staging = Test, prod / prd / live = Production. No match = the site name. Example: regex <code>crm-(\w+)\.example\.com</code>, tag <code>CRM $1</code>.</p>
+    <div class="scroll">
+      <table id="rules">
+        <thead><tr><th style="width:38%">URL regex</th><th style="width:20%">Tag text</th><th style="width:9%">Default client</th><th style="width:17%">Colour</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="row" style="margin-top:8px"><button id="add">Add rule</button><button id="reset">Reset to defaults</button><button id="export">Export rules</button><label class="filebtn">Import rules <input type="file" id="import" accept=".json,application/json"></label></div>
+  </section>
+
+  <section>
+    <h2>Test a URL</h2>
+    <label for="test" class="row">URL <input id="test" spellcheck="false" style="flex:1 1 320px" value="https://app-dev.example.com/orders"></label>
+    <p style="margin:8px 0 0">Result: <span id="out"></span></p>
+  </section>
+
+  <div class="row"><button id="save" class="primary">Save</button><span id="status" role="status"></span></div>
+</main>
+<script src="rules.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

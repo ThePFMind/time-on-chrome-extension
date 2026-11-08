@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Time On",
+  "version": "1.4",
+  "description": "Glass clock overlay (time, date, system tag) for test-evidence screenshots. Toolbar icon or Alt+Shift+K turns it on/off.",
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "permissions": ["storage"],
+  "action": { "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png" }, "default_title": "Time On: show / hide the clock (Alt+Shift+K) - right-click > Options for URL rules" },
+  "background": { "service_worker": "bg.js" },
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "commands": { "_execute_action": { "suggested_key": { "default": "Alt+Shift+K" } } },
+  "content_scripts": [
+    { "matches": ["<all_urls>"], "js": ["rules.js", "clock.js"], "run_at": "document_idle" }
+  ]
+}

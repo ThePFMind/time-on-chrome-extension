@@ -1,0 +1,294 @@
+<title>Time On</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one column; a live wireframe "test screen" with the real clock, then how tags work, recipes, install. */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #142031; --muted: #4f5d6e; --line: #d6dde6; --accent: #1d4ed8; --wire: #c9d3df; --wire2: #e6ebf1;
+  --S: rgba(21,128,61,.9); --D: rgba(29,78,216,.88); --Q: rgba(180,83,9,.9); --P: rgba(185,28,28,.92); --none: rgba(17,24,39,.8);
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --mono: "IBM Plex Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141b; --surface: #18202b; --ink: #e8edf3; --muted: #a3b0bf; --line: #2e3a4a; --accent: #7aa2ff; --wire: #3a4758; --wire2: #232d3a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0f141b; --surface: #18202b; --ink: #e8edf3; --muted: #a3b0bf; --line: #2e3a4a; --accent: #7aa2ff; --wire: #3a4758; --wire2: #232d3a; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 44px; }
+h1 { margin: 0; font-size: 40px; line-height: 1.1; letter-spacing: -.5px; text-wrap: balance; }
+h2 { margin: 0 0 6px; font-size: 22px; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: 13.5px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent); }
+header { display: flex; flex-direction: column; gap: 12px; }
+
+/* demo */
+.demo { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start; }
+@media (max-width: 820px) { .demo { grid-template-columns: minmax(0, 1fr); } }
+.screen { position: relative; height: 420px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.screen[data-page=dark] { background: #141b25; --wire: #3a4758; --wire2: #222c39; }
+.bar { height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--wire2); border-bottom: 1px solid var(--line); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--wire); }
+.url { flex: 1; min-width: 0; height: 24px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); font: 12px var(--mono); color: var(--muted); display: flex; align-items: center; padding: 0 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.screen[data-page=dark] .url { background: #0f141b; color: #a3b0bf; border-color: #2e3a4a; }
+.body { padding: 18px; display: grid; grid-template-columns: 140px 1fr; gap: 18px; }
+.side { display: flex; flex-direction: column; gap: 10px; } .side i, .rowl i { display: block; height: 10px; border-radius: 5px; background: var(--wire); }
+.main { display: flex; flex-direction: column; gap: 12px; }
+.hero { height: 90px; border-radius: 8px; background: repeating-linear-gradient(45deg, #2f6fdf 0 22px, #f0a33a 22px 44px, #f7f9fb 44px 66px); opacity: .85; }
+.rowl { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--wire2); }
+.rowl i:nth-child(2) { width: 70%; } .rowl i:nth-child(3) { width: 50%; }
+
+/* the clock: same CSS as clock.js */
+.c { position: absolute; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 7px 7px 7px 6px; border-radius: 999px; overflow: hidden; white-space: nowrap;
+  font-family: "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: #0b1220; background: rgba(255,255,255,.35);
+  backdrop-filter: blur(20px) saturate(200%) brightness(1.08); -webkit-backdrop-filter: blur(20px) saturate(200%) brightness(1.08);
+  border: 1px solid rgba(255,255,255,.55); box-shadow: 0 10px 30px rgba(0,0,0,.22), inset 0 1px 1px rgba(255,255,255,.95), inset 0 -1px 1px rgba(255,255,255,.3), inset 0 0 14px rgba(255,255,255,.25); }
+.c::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 55%; border-radius: 999px 999px 40% 40%; background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0)); pointer-events: none; }
+.c > * { position: relative; }
+.g { cursor: grab; display: grid; place-items: center; width: 22px; height: 28px; border-radius: 999px; touch-action: none; }
+.g:hover, .g:focus-visible { background: rgba(255,255,255,.45); outline: none; }
+.t { font-size: 15px; font-weight: 700; letter-spacing: .3px; } .d { font-size: 13px; font-weight: 500; color: #26303d; }
+.s { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: var(--none); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+.s[data-env=S] { background: var(--S); } .s[data-env=D] { background: var(--D); } .s[data-env=Q] { background: var(--Q); } .s[data-env=P] { background: var(--P); }
+.c[data-size=S] { zoom: .85; } .c[data-size=L] { zoom: 1.25; }
+.c[data-theme=dark] { color: #f4f7fb; background: rgba(15,20,30,.5); border-color: rgba(255,255,255,.22); box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.35), inset 0 0 14px rgba(255,255,255,.08); }
+.c[data-theme=dark]::before { background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0)); }
+.c[data-theme=dark] .d { color: #cdd6e1; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.panel h3 { margin: 0; font-size: 14px; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+label.k { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+select, input[type=text] { width: 100%; box-sizing: border-box; padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; }
+input[type=text] { font-family: var(--mono); font-size: 13px; }
+input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); }
+select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.hint { font-size: 13px; color: var(--muted); }
+
+/* stages */
+.stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stage { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.chip { align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; }
+.stage small { color: var(--muted); font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.arrow { color: var(--muted); font-size: 13px; }
+
+/* tester + recipes */
+.tester { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; }
+.result { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; min-width: 720px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+button { padding: 6px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 70ch; }
+.steps li::marker { color: var(--accent); font-weight: 700; }
+kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--surface); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 720px) { .two { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Chrome extension · for test evidence</span>
+    <h1>Time On</h1>
+    <p>A small glass clock in the corner of every page, with the date and the system you are testing. Every screenshot you take for a test result carries its own timestamp and stage. Try it below: change the look on the right, drag the grip to move it, double-click the grip to reset.</p>
+  </header>
+
+  <section class="demo" aria-label="Live demo">
+    <div class="screen" id="screen" data-page="light">
+      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url" id="urlbar"></span></div>
+      <div class="body" aria-hidden="true">
+        <div class="side"><i></i><i style="width:80%"></i><i style="width:60%"></i><i style="width:85%"></i><i style="width:50%"></i></div>
+        <div class="main"><div class="hero"></div>
+          <div class="rowl"><i></i><i></i><i></i></div><div class="rowl"><i></i><i></i><i></i></div><div class="rowl"><i></i><i></i><i></i></div><div class="rowl"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="c" id="clock" style="right:16px;bottom:16px">
+        <span class="g" id="grip" tabindex="0" role="button" aria-label="Move the clock (drag); double-click to reset"><svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor" opacity=".55" aria-hidden="true"><circle cx="2" cy="2" r="1.4"/><circle cx="6" cy="2" r="1.4"/><circle cx="2" cy="7" r="1.4"/><circle cx="6" cy="7" r="1.4"/><circle cx="2" cy="12" r="1.4"/><circle cx="6" cy="12" r="1.4"/></svg></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="t" id="t"></span><span class="d" id="d"></span><span class="s" id="s"></span>
+      </div>
+    </div>
+
+    <form class="panel" id="look" aria-label="Look">
+      <h3>Look (Options &gt; Look)</h3>
+      <label class="f">Time <select id="hour"><option value="24">24-hour (15:42)</option><option value="12">12-hour (3:42 PM)</option></select></label>
+      <label class="f">Date <select id="date"><option value="short">Sun 8 Nov 2026</option><option value="iso">2026-11-08</option><option value="dmy">08.11.2026</option><option value="dmys">08/11/2026</option><option value="off">No date</option></select></label>
+      <label class="f">Size <select id="size"><option value="S">Small</option><option value="M" selected>Medium</option><option value="L">Large</option></select></label>
+      <label class="f">Glass <select id="theme"><option value="light">Light glass</option><option value="dark">Dark glass</option></select></label>
+      <label class="k"><input type="checkbox" id="seconds" checked> Show seconds</label>
+      <label class="k"><input type="checkbox" id="tag" checked> Show system tag</label>
+      <label class="f">Demo page <select id="page"><option value="light">Light page</option><option value="dark">Dark page</option></select></label>
+      <label class="f">Page URL <input type="text" id="url" spellcheck="false" value="https://app-dev.example.com/orders"></label>
+      <span class="hint">The tag follows the URL, using the rules in the table below.</span>
+    </form>
+  </section>
+
+  <section>
+    <h2>Four stages, four colours</h2>
+    <p>With no rules set, the tag is the site name and the colour comes from a word in it. The word must stand alone between dots or dashes: <code>app-dev</code> matches, <code>appdev</code> does not.</p>
+    <div class="stages" style="margin-top:16px">
+      <div class="stage"><span class="chip" style="background:var(--S)">SBX</span><b>Sandbox</b><small>sbx · sandbox · trial · playground</small></div>
+      <div class="stage"><span class="chip" style="background:var(--D)">DEV</span><b>Development</b><small>dev · develop · localhost · local</small></div>
+      <div class="stage"><span class="chip" style="background:var(--Q)">TEST</span><b>Test</b><small>test · qa · qas · uat · stage · staging · stg · preprod</small></div>
+      <div class="stage"><span class="chip" style="background:var(--P)">PROD</span><b>Production</b><small>prod · prd · production · live</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Name your own systems</h2>
+    <p>Options &gt; System tag rules. Each rule is a regex on the full URL; the first match wins. In the tag text, <code>$1</code> is the first regex group, <code>{host}</code> the host name, and <code>{client}</code> the <code>sap-client</code> from the URL, else the rule's default client. The colour is fixed per rule, or Auto from the host words. Try the URLs in the demo: <button type="button" data-url="https://crm-uat.example.com/accounts">crm-uat</button> <button type="button" data-url="https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100">SAP GUI client 100</button> <button type="button" data-url="https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150">SD0-150 style</button> <button type="button" data-url="https://shop.example.com/">shop (no stage)</button></p>
+    <div class="tbl" style="margin-top:16px">
+      <table>
+        <thead><tr><th>URL regex</th><th>Tag text</th><th>Default client</th><th>Colour</th><th>Example result</th></tr></thead>
+        <tbody id="recipes"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="two">
+    <div>
+      <h2>Install</h2>
+      <ol class="steps">
+        <li>From the Chrome Web Store: open the Time On listing and click <b>Add to Chrome</b>. Your team gets the link once the listing is live.</li>
+        <li>Before that, from the folder: open <code>chrome://extensions</code>, turn on Developer mode, click <b>Load unpacked</b> and choose the <code>clock-overlay</code> folder.</li>
+        <li>Pin the toolbar icon. Click it, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd>, to show or hide the clock. A badge reading OFF means it is hidden.</li>
+      </ol>
+    </div>
+    <div>
+      <h2>Share rules with the team</h2>
+      <ol class="steps">
+        <li>One person writes the rules in Options and clicks <b>Export rules</b>. That saves <code>time-on-rules.json</code>.</li>
+        <li>Everyone else opens Options, clicks <b>Import rules</b>, chooses the file and clicks <b>Save</b>.</li>
+        <li>Rules, the Look and the show-on list sync with your Chrome profile. On/off and the clock position are kept per PC and per site.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script>
+// Shared by clock.js (content script) and options.js. First matching rule wins.
+// re: regex on the full URL (case-insensitive).
+// label: $1..$9 = regex groups (upper case), {client} = sap-client from the URL or the rule default, {host} = host name.
+// env: S sandbox | D development | Q test | P production | auto (from words in the host) | none
+// Default for any web system: the host name, coloured by words like dev / test / prod in it.
+// Own rules (per app or system, e.g. SAP: '/sap/bc/gui/' -> 'SAP GUI {client}') are added in Options or imported as JSON.
+var SBX_DEFAULT_RULES = [
+  { re: '.', label: '{host}', client: '', env: 'auto' },
+];
+
+var SBX_ENV_NAME = { S: 'SBX', D: 'DEV', Q: 'TEST', P: 'PROD' };
+
+function sbxRegex(s) { try { return new RegExp(s, 'i'); } catch { return null; } }
+
+// Environment from words in the host name, e.g. erp-dev.example.com, s4qas.example.com is NOT matched (needs a separator).
+function sbxAutoEnv(host) {
+  const w = host.toLowerCase().split(/[^a-z0-9]+/);
+  const has = (...k) => w.some(x => k.includes(x));
+  return has('prd', 'prod', 'production', 'live') ? 'P'
+    : has('qas', 'qa', 'test', 'tst', 'uat', 'stage', 'staging', 'stg', 'preprod') ? 'Q'
+    : has('dev', 'develop', 'development', 'localhost', 'local') ? 'D'
+    : has('sbx', 'sandbox', 'trial', 'playground') ? 'S' : '';
+}
+
+function sbxLabel(href, rules) {
+  let u;
+  try { u = new URL(href); } catch { return ['', '']; }
+  const client = u.searchParams.get('sap-client');
+  for (const r of rules) {
+    const m = sbxRegex(r.re)?.exec(href);
+    if (!m) continue;
+    const c = client || r.client;
+    let text = r.label.replace(/\$(\d)/g, (_, i) => (m[i] || '').toUpperCase())
+      .replace('{host}', u.hostname);
+    text = c ? text.replace('{client}', c) : text.replace(/[\s\-]*\{client\}/, '');
+    let env = r.env;
+    if (env === 'auto') {
+      env = sbxAutoEnv(u.hostname);
+      if (env) text += ' ' + SBX_ENV_NAME[env];
+    }
+    return [text.trim(), env === 'none' ? '' : env];
+  }
+  return [u.hostname, ''];
+}
+
+// Look of the clock. hour: 24 | 12. date: short | iso | dmy | dmys | off. size: S | M | L. theme: light | dark.
+var SBX_DEFAULT_STYLE = { hour: '24', seconds: true, date: 'short', size: 'M', theme: 'light', tag: true };
+
+function sbxFormat(n, st) {
+  const p = x => String(x).padStart(2, '0');
+  let h = n.getHours(), suf = '';
+  if (st.hour === '12') { suf = h < 12 ? ' AM' : ' PM'; h = h % 12 || 12; }
+  const time = (st.hour === '12' ? String(h) : p(h)) + ':' + p(n.getMinutes()) + (st.seconds ? ':' + p(n.getSeconds()) : '') + suf;
+  const Y = n.getFullYear(), M = p(n.getMonth() + 1), D = p(n.getDate());
+  const date = {
+    short: n.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).replace(',', ''),
+    iso: `${Y}-${M}-${D}`, dmy: `${D}.${M}.${Y}`, dmys: `${D}/${M}/${Y}`, off: '',
+  }[st.date] ?? '';
+  return { time, date };
+}
+
+// showOn: empty = every site, else a regex on the full URL
+function sbxAllowed(href, showOn) { return !showOn || !!sbxRegex(showOn)?.test(href); }
+
+// Imported rules file: [{re, label, client?, env?}] - anything else is rejected
+function sbxValidRules(x) {
+  return Array.isArray(x) && x.length <= 200 && x.every(r => r && typeof r.re === 'string' && typeof r.label === 'string'
+    && sbxRegex(r.re) && ['S', 'D', 'Q', 'P', 'auto', 'none', undefined].includes(r.env)
+    && (r.client === undefined || typeof r.client === 'string'));
+}
+
+
+const RULES = [
+  { re: 'crm-(\\w+)\\.example\\.com', label: 'CRM', client: '', env: 'auto' },
+  { re: '^https://s4dev\\.', label: 'SD0-{client}', client: '100', env: 'D' },
+  { re: '/sap/bc/gui/sap/its/webgui', label: 'SAP GUI {client}', client: '', env: 'auto' },
+  { re: '.', label: '{host}', client: '', env: 'auto' },
+];
+const SAMPLE = ['https://crm-uat.example.com/accounts', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150', 'https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100', 'https://hr-sandbox.example.com/'];
+const ENVTXT = { S: 'Sandbox', D: 'Development', Q: 'Test', P: 'Production', auto: 'Auto from host', none: 'None (grey)' };
+const $ = id => document.getElementById(id);
+const el = (tag, txt, cls) => Object.assign(document.createElement(tag), { textContent: txt, className: cls || '' });
+
+$('recipes').replaceChildren(...RULES.map((r, i) => {
+  const tr = document.createElement('tr');
+  const [txt, env] = sbxLabel(SAMPLE[i], RULES.slice(i));
+  const res = document.createElement('td');
+  const chip = el('span', txt, 'chip'); chip.style.background = `var(--${env || 'none'})`;
+  res.append(chip);
+  tr.append(el('td', r.re, 'mono'), el('td', r.label, 'mono'), el('td', r.client || '-', 'mono'), el('td', ENVTXT[r.env]), res);
+  return tr;
+}));
+
+const clock = $('clock'), screen = $('screen');
+function tick() {
+  const st = { hour: $('hour').value, date: $('date').value, size: $('size').value, theme: $('theme').value, seconds: $('seconds').checked, tag: $('tag').checked };
+  const f = sbxFormat(new Date(), st), url = $('url').value.trim(), [txt, env] = sbxLabel(url, RULES);
+  $('t').textContent = f.time; $('d').textContent = f.date; $('d').hidden = !f.date;
+  $('s').textContent = txt; $('s').dataset.env = env; $('s').hidden = !st.tag || !txt;
+  clock.dataset.size = st.size; clock.dataset.theme = st.theme; screen.dataset.page = $('page').value;
+  $('urlbar').textContent = url;
+}
+setInterval(tick, 1000); tick();
+$('look').addEventListener('input', tick); $('look').addEventListener('change', tick);
+$('look').addEventListener('submit', e => e.preventDefault());
+document.querySelectorAll('[data-url]').forEach(b => b.addEventListener('click', () => { $('url').value = b.dataset.url; tick(); }));
+
+// drag inside the demo screen; snaps to the edge margin when within 40px, double-click resets
+let drag = null;
+const grip = $('grip');
+grip.addEventListener('pointerdown', e => { const r = clock.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top }; grip.setPointerCapture(e.pointerId); grip.style.cursor = 'grabbing'; });
+grip.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const s = screen.getBoundingClientRect(), r = clock.getBoundingClientRect();
+  let x = Math.max(0, Math.min(e.clientX - s.left - drag.dx, s.width - r.width)), y = Math.max(44, Math.min(e.clientY - s.top - drag.dy, s.height - r.height));
+  const snap = (v, max) => v < 40 ? 16 : max - v < 40 ? max - 16 : v;
+  x = snap(x, s.width - r.width); y = Math.max(60, snap(y, s.height - r.height));
+  Object.assign(clock.style, { left: x + 'px', top: y + 'px', right: 'auto', bottom: 'auto' });
+});
+const end = () => { drag = null; grip.style.cursor = ''; };
+grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+grip.addEventListener('dblclick', () => Object.assign(clock.style, { left: 'auto', top: 'auto', right: '16px', bottom: '16px' }));
+grip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); grip.dispatchEvent(new Event('dblclick')); } });
+</script>
