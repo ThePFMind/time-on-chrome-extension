@@ -1,4 +1,4 @@
-# Time On
+# Time On (for test evidence)
 
 Chrome extension (Manifest V3): a small glass clock in the corner of every page, with the date and a tag for the
 system you are on, so test-evidence screenshots carry their own timestamp and stage.
