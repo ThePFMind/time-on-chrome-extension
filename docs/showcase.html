@@ -120,6 +120,16 @@ kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px
       <label class="k"><input type="checkbox" id="seconds" checked> Show seconds</label>
       <label class="k"><input type="checkbox" id="tag" checked> Show system tag</label>
       <label class="f">Demo page <select id="page"><option value="light">Light page</option><option value="dark">Dark page</option></select></label>
+      <label class="f">System <select id="sys">
+        <option value="https://hr-sandbox.example.com/">Sandbox: hr-sandbox</option>
+        <option value="https://app-dev.example.com/orders" selected>Development: app-dev</option>
+        <option value="https://crm-uat.example.com/accounts">Test: crm-uat (own rule)</option>
+        <option value="https://shop.prod.example.com/">Production: shop.prod</option>
+        <option value="https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100">SAP GUI, client 100 (own rule)</option>
+        <option value="https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150">SD0-150 (own rule)</option>
+        <option value="https://shop.example.com/">No stage word: shop</option>
+        <option value="">Other: type a URL below</option>
+      </select></label>
       <label class="f">Page URL <input type="text" id="url" spellcheck="false" value="https://app-dev.example.com/orders"></label>
       <span class="hint">The tag follows the URL, using the rules in the table below.</span>
     </form>
@@ -271,9 +281,13 @@ function tick() {
   $('urlbar').textContent = url;
 }
 setInterval(tick, 1000); tick();
+// System preset fills the URL; typing a URL switches the preset to the matching entry or "Other"
+const syncSys = () => { $('sys').value = [...$('sys').options].some(o => o.value === $('url').value.trim()) ? $('url').value.trim() : ''; };
+$('sys').addEventListener('change', () => { if ($('sys').value) $('url').value = $('sys').value; else $('url').focus(); tick(); });
+$('url').addEventListener('input', syncSys);
 $('look').addEventListener('input', tick); $('look').addEventListener('change', tick);
 $('look').addEventListener('submit', e => e.preventDefault());
-document.querySelectorAll('[data-url]').forEach(b => b.addEventListener('click', () => { $('url').value = b.dataset.url; tick(); }));
+document.querySelectorAll('[data-url]').forEach(b => b.addEventListener('click', () => { $('url').value = b.dataset.url; syncSys(); tick(); }));
 
 // drag inside the demo screen; snaps to the edge margin when within 40px, double-click resets
 let drag = null;
