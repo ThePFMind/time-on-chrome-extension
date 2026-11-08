@@ -14,7 +14,7 @@ function sbxRegex(s) { try { return new RegExp(s, 'i'); } catch { return null; }
 
 // Environment from words in the host name, e.g. erp-dev.example.com, s4qas.example.com is NOT matched (needs a separator).
 function sbxAutoEnv(host) {
-  const w = host.toLowerCase().split(/[^a-z0-9]+/);
+  const w = host.toLowerCase().split(/[^a-z0-9]+/).map(x => x.replace(/\d+$/, '')); // dev1 -> dev
   const has = (...k) => w.some(x => k.includes(x));
   return has('prd', 'prod', 'production', 'live') ? 'P'
     : has('qas', 'qa', 'test', 'tst', 'uat', 'stage', 'staging', 'stg', 'preprod') ? 'Q'
@@ -44,7 +44,8 @@ function sbxLabel(href, rules) {
 }
 
 // Look of the clock. hour: 24 | 12. date: short | iso | dmy | dmys | off. size: S | M | L. theme: light | dark.
-var SBX_DEFAULT_STYLE = { hour: '24', seconds: true, date: 'short', size: 'M', theme: 'light', tag: true };
+// corner: start corner br | bl | tr | tl (a site where the clock was dragged keeps its own place).
+var SBX_DEFAULT_STYLE = { hour: '24', seconds: true, date: 'short', size: 'M', theme: 'light', tag: true, corner: 'br' };
 
 function sbxFormat(n, st) {
   const p = x => String(x).padStart(2, '0');

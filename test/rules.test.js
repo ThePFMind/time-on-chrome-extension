@@ -8,6 +8,7 @@ t('https://app-dev.example.com/orders', ['app-dev.example.com DEV', 'D']);
 t('https://shop.prod.example.com/', ['shop.prod.example.com PROD', 'P']);
 t('https://uat.crm.example.org/x', ['uat.crm.example.org TEST', 'Q']);
 t('https://hr-sandbox.example.com/', ['hr-sandbox.example.com SBX', 'S']);
+t('https://acme-dev1.fa.us2.oraclecloud.com/', ['acme-dev1.fa.us2.oraclecloud.com DEV', 'D']); // trailing digits
 t('http://localhost:4004/', ['localhost DEV', 'D']);
 t('https://example.com/', ['example.com', '']);
 t('https://s4qas.example.com/', ['s4qas.example.com', '']); // no separator, no guess

@@ -37,7 +37,7 @@ const check = () => {
 };
 
 const readStyle = () => ({
-  hour: $('#hour').value, date: $('#date').value, size: $('#size').value, theme: $('#theme').value,
+  hour: $('#hour').value, date: $('#date').value, size: $('#size').value, theme: $('#theme').value, corner: $('#corner').value,
   seconds: $('#seconds').checked, tag: $('#tag').checked,
 });
 const preview = () => {
@@ -49,7 +49,7 @@ const preview = () => {
 };
 const loadStyle = st => {
   st = { ...SBX_DEFAULT_STYLE, ...st };
-  for (const k of ['hour', 'date', 'size', 'theme']) $('#' + k).value = st[k];
+  for (const k of ['hour', 'date', 'size', 'theme', 'corner']) $('#' + k).value = st[k];
   $('#seconds').checked = st.seconds; $('#tag').checked = st.tag;
   preview();
 };

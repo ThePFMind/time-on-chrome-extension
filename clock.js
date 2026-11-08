@@ -44,7 +44,7 @@
   // --- settings (synced) and on/off (per PC) ---
   let cfg = { rules: SBX_DEFAULT_RULES, showOn: '', style: SBX_DEFAULT_STYLE }, on = true;
   const show = () => { host.style.display = on && sbxAllowed(location.href, cfg.showOn) ? '' : 'none'; };
-  chrome.storage.sync.get(cfg, v => { cfg = v; tick(); show(); });
+  chrome.storage.sync.get(cfg, v => { cfg = v; tick(); show(); place(); });
   chrome.storage.local.get({ on: true }, v => { on = v.on; show(); });
   chrome.storage.onChanged.addListener((ch, area) => {
     if (area === 'local' && ch.on) on = ch.on.newValue;
@@ -72,17 +72,19 @@
   document.documentElement.appendChild(host);
 
   // --- position: anchored to the nearest corner, per site, kept inside the window ---
-  const DEF = { ax: 'r', x: 16, ay: 'b', y: 16 }, KEY = 'pos:' + location.host, SNAP = 40, M = 16;
-  let pos = DEF;
+  const KEY = 'pos:' + location.host, SNAP = 40, M = 16;
+  let pos = null; // null = start corner from Options > Look
   const place = () => {
+    const k = ({ ...SBX_DEFAULT_STYLE, ...cfg.style }).corner;
+    const p = pos || { ax: k[1] === 'l' ? 'l' : 'r', x: M, ay: k[0] === 't' ? 't' : 'b', y: M };
     const r = c.getBoundingClientRect();
-    const x = Math.max(0, Math.min(pos.x, innerWidth - r.width)), y = Math.max(0, Math.min(pos.y, innerHeight - r.height));
+    const x = Math.max(0, Math.min(p.x, innerWidth - r.width)), y = Math.max(0, Math.min(p.y, innerHeight - r.height));
     Object.assign(c.style, {
-      left: pos.ax === 'l' ? x + 'px' : 'auto', right: pos.ax === 'r' ? x + 'px' : 'auto',
-      top: pos.ay === 't' ? y + 'px' : 'auto', bottom: pos.ay === 'b' ? y + 'px' : 'auto',
+      left: p.ax === 'l' ? x + 'px' : 'auto', right: p.ax === 'r' ? x + 'px' : 'auto',
+      top: p.ay === 't' ? y + 'px' : 'auto', bottom: p.ay === 'b' ? y + 'px' : 'auto',
     });
   };
-  chrome.storage.local.get({ [KEY]: DEF }, v => { pos = v[KEY]; place(); });
+  chrome.storage.local.get({ [KEY]: null }, v => { pos = v[KEY]; place(); });
   addEventListener('resize', place);
 
   let dx = 0, dy = 0;
@@ -111,5 +113,5 @@
     place();
     chrome.storage.local.set({ [KEY]: pos });
   });
-  g.addEventListener('dblclick', () => { pos = DEF; place(); chrome.storage.local.remove(KEY); });
+  g.addEventListener('dblclick', () => { pos = null; place(); chrome.storage.local.remove(KEY); });
 })();

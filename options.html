@@ -48,12 +48,13 @@
 
   <section>
     <h2>Look</h2>
-    <p>Applies to every tab at once after Save.</p>
+    <p>Applies to every tab at once after Save. The clock starts in the chosen corner; on a site where you dragged it, it stays where you put it (double-click the grip to send it back).</p>
     <div class="grid">
       <label>Time <select id="hour"><option value="24">24-hour (15:42)</option><option value="12">12-hour (3:42 PM)</option></select></label>
       <label>Date <select id="date"><option value="short">Sun 8 Nov 2026</option><option value="iso">2026-11-08</option><option value="dmy">08.11.2026</option><option value="dmys">08/11/2026</option><option value="off">No date</option></select></label>
       <label>Size <select id="size"><option value="S">Small</option><option value="M">Medium</option><option value="L">Large</option></select></label>
       <label>Glass <select id="theme"><option value="light">Light glass</option><option value="dark">Dark glass</option></select></label>
+      <label>Start corner <select id="corner"><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option></select></label>
       <label class="check"><input type="checkbox" id="seconds"> Show seconds</label>
       <label class="check"><input type="checkbox" id="tag"> Show system tag</label>
     </div>
