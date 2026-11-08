@@ -18,7 +18,7 @@ Live demo and guide: [`docs/showcase.html`](docs/showcase.html). Store texts: [`
 3. Release: raise `version` in `manifest.json`, then zip the package files (not `test/`, `docs/`, `README.md`):
 
 ```powershell
-Compress-Archive -Path manifest.json,bg.js,rules.js,clock.js,options.html,options.js,icons -DestinationPath ..\time-on-<version>.zip -Force
+Compress-Archive -Path manifest.json,bg.js,rules.js,clock.js,options.html,options.js,icons -DestinationPath releases\time-on-<version>.zip -Force
 ```
 
 ## Files
