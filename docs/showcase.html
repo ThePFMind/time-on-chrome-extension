@@ -86,12 +86,15 @@ button { padding: 6px 12px; border: 1px solid var(--line); border-radius: 7px; b
 kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--surface); }
 .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 @media (max-width: 720px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.lede { font-size: 1.25rem; font-weight: 600; margin-top: 4px; }
 </style>
 
 <div class="wrap">
   <header>
     <span class="eyebrow">Chrome extension · for test evidence</span>
     <h1>Time On</h1>
+    <p class="lede">Every screenshot answers when, and on which system.</p>
+    <p>Auditors and test leads ask two things about a screenshot: when was it taken, and on which system. Time On puts a small glass clock in the corner of every page, with the date and the system tag, so the answer is inside the picture. Take the screenshot with any tool you already use; the extension only shows the clock, it does not capture or store anything.</p>
     <p>A small glass clock in the corner of every page, with the date and the system you are testing. Every screenshot you take for a test result carries its own timestamp and stage. Try it below: change the look on the right, drag the grip to move it, double-click the grip to reset.</p>
   </header>
 
@@ -116,6 +119,7 @@ kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px
       <label class="f">Time <select id="hour"><option value="24">24-hour (15:42)</option><option value="12">12-hour (3:42 PM)</option></select></label>
       <label class="f">Date <select id="date"><option value="short">Sun 8 Nov 2026</option><option value="iso">2026-11-08</option><option value="dmy">08.11.2026</option><option value="dmys">08/11/2026</option><option value="off">No date</option></select></label>
       <label class="f">Size <select id="size"><option value="S">Small</option><option value="M" selected>Medium</option><option value="L">Large</option></select></label>
+      <label class="f">Start corner <select id="corner"><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option></select></label>
       <label class="f">Glass <select id="theme"><option value="light">Light glass</option><option value="dark">Dark glass</option></select></label>
       <label class="k"><input type="checkbox" id="seconds" checked> Show seconds</label>
       <label class="k"><input type="checkbox" id="tag" checked> Show system tag</label>
@@ -148,12 +152,23 @@ kbd { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border: 1px
     </div>
   </section>
 
+  <section>
+    <h2>Good audit screenshots</h2>
+    <ol class="steps">
+      <li>Keep the clock in the shot: capture the whole window, or a region that includes the corner with the clock.</li>
+      <li>Leave the system tag on, and give each system a rule, so the tag reads like your landscape (for example <code>SD0-100 DEV</code>), not just a host name.</li>
+      <li>Use one date format for the whole team. <code>2026-11-08</code> (ISO) cannot be misread across countries.</li>
+      <li>Keep seconds on when steps follow each other quickly, so the order of screenshots is clear.</li>
+      <li>The time is your PC clock. Keep Windows / macOS time sync on; the extension does not check it.</li>
+    </ol>
+  </section>
+
   <section class="two">
     <div>
       <h2>Install</h2>
       <ol class="steps">
         <li>From the Chrome Web Store: open the Time On listing and click <b>Add to Chrome</b>. Your team gets the link once the listing is live.</li>
-        <li>Before that, from the folder: open <code>chrome://extensions</code>, turn on Developer mode, click <b>Load unpacked</b> and choose the <code>clock-overlay</code> folder.</li>
+        <li>Before that, from the folder: open <code>chrome://extensions</code>, turn on Developer mode, click <b>Load unpacked</b> and choose the <code>time-on-chrome-extension</code> folder (or the unzipped release).</li>
         <li>Pin the toolbar icon. Click it, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd>, to show or hide the clock. A badge reading OFF means it is hidden.</li>
       </ol>
     </div>
@@ -243,7 +258,7 @@ function sbxValidRules(x) {
 
 // Demo rule set, first match wins. ex = sample URL(s) shown in the System picker and the recipe table.
 const RULES = [
-  { grp: 'SAP', re: '^https://s4dev\\.', label: 'SD0-{client} DEV', client: '100', env: 'D', ex: [['SD0-150 (client in URL)', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150'], ['SD0-100 (default client)', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui']] },
+  { grp: 'SAP', re: '^https://s4dev\\.', label: 'SD0-{client} DEV', client: '100', env: 'D', ex: [['SD0-100 (default client)', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui'], ['SD0-150 (client in URL)', 'https://s4dev.corp.example/sap/bc/gui/sap/its/webgui?sap-client=150']] },
   { grp: 'SAP', re: '/sap/bc/gui/sap/its/webgui', label: 'SAP GUI {client}', client: '', env: 'auto', ex: [['SAP GUI client 100', 'https://erp-dev.example.com/sap/bc/gui/sap/its/webgui?sap-client=100']] },
   { grp: 'SAP', re: '/sap/bc/ui2/flp', label: 'Fiori {client}', client: '', env: 'auto', ex: [['Fiori launchpad', 'https://erp-qas.example.com/sap/bc/ui2/flp?sap-client=300#Shell-home']] },
   { grp: 'Business apps', re: '\\.sandbox\\.(my\\.salesforce|lightning\\.force)\\.com', label: 'Salesforce', client: '', env: 'auto', ex: [['Salesforce sandbox "uat"', 'https://acme--uat.sandbox.lightning.force.com/lightning/page/home']] },
@@ -251,6 +266,7 @@ const RULES = [
   { grp: 'Business apps', re: '^https://\\w+?dev\\d*\\.service-now\\.com', label: 'ServiceNow DEV', client: '', env: 'D', ex: [['ServiceNow dev instance', 'https://acmedev.service-now.com/now/nav/ui/home']] },
   { grp: 'Business apps', re: '^https://\\w+?(test|uat)\\d*\\.service-now\\.com', label: 'ServiceNow TEST', client: '', env: 'Q', ex: [['ServiceNow test instance', 'https://acmetest.service-now.com/now/nav/ui/home']] },
   { grp: 'Business apps', re: '\\.service-now\\.com', label: 'ServiceNow PROD', client: '', env: 'P', ex: [['ServiceNow production', 'https://acme.service-now.com/now/nav/ui/home']] },
+  { grp: 'Business apps', re: '\\.fa\\.\\w+\\.oraclecloud\\.com', label: 'Oracle Fusion', client: '', env: 'auto', ex: [['Oracle Fusion dev1', 'https://acme-dev1.fa.us2.oraclecloud.com/fscmUI/faces/FuseWelcome'], ['Oracle Fusion test', 'https://acme-test.fa.em2.oraclecloud.com/fscmUI/faces/FuseWelcome']] },
   { grp: 'Business apps', re: '\\.crm\\d*\\.dynamics\\.com', label: 'Dynamics 365', client: '', env: 'auto', ex: [['Dynamics 365 test', 'https://acme-test.crm4.dynamics.com/main.aspx']] },
   { grp: 'Business apps', re: '\\.atlassian\\.net/(jira|browse)', label: 'Jira', client: '', env: 'auto', ex: [['Jira sandbox', 'https://acme-sandbox-482.atlassian.net/jira/your-work']] },
   { grp: 'Own web apps', re: '^https?://localhost:(\\d+)', label: 'Local :$1', client: '', env: 'D', ex: [['Local dev server', 'http://localhost:3000/orders']] },
@@ -313,6 +329,9 @@ grip.addEventListener('pointermove', e => {
 });
 const end = () => { drag = null; grip.style.cursor = ''; };
 grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
-grip.addEventListener('dblclick', () => Object.assign(clock.style, { left: 'auto', top: 'auto', right: '16px', bottom: '16px' }));
+// start corner (Options > Look); a drag overrides it, double-click goes back to it
+const toCorner = () => { const k = $('corner').value; Object.assign(clock.style, { left: k[1] === 'l' ? '16px' : 'auto', right: k[1] === 'r' ? '16px' : 'auto', top: k[0] === 't' ? '60px' : 'auto', bottom: k[0] === 'b' ? '16px' : 'auto' }); };
+$('corner').addEventListener('change', toCorner);
+grip.addEventListener('dblclick', toCorner);
 grip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); grip.dispatchEvent(new Event('dblclick')); } });
 </script>

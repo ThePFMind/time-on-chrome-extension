@@ -48,6 +48,12 @@
     "env": "P"
   },
   {
+    "re": "\\.fa\\.\\w+\\.oraclecloud\\.com",
+    "label": "Oracle Fusion",
+    "client": "",
+    "env": "auto"
+  },
+  {
     "re": "\\.crm\\d*\\.dynamics\\.com",
     "label": "Dynamics 365",
     "client": "",
